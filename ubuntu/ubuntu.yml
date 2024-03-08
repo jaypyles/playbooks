@@ -1,0 +1,43 @@
+---
+- name: Install Packages
+  hosts: vm
+  become: yes
+
+  tasks:
+    # - name: Update Package Cache
+    #   apt:
+    #     update_cache: yes
+    #
+    # - name: Install Req. Packages with APT
+    #   apt:
+    #     name:
+    #       - fish
+    #       - bat
+    #       - firefox
+    #       - docker
+    #       - docker-compose
+    #       - grim
+    #       - htop
+    #       - jq
+    #       - kitty
+    #       - racket
+    #       - ripgrep
+    #     state: present
+    #
+    # - name: Install Req. Packages with SNAP
+    #   community.general.snap:
+    #     name:
+    #       - discord
+    #       - ipython
+    #       - obsidian
+    #       - spotify
+    #       - mise
+    #       - nvim
+    #       - telegram-desktop
+    #     classic: yes
+
+    # - name: Install Mise
+    #   shell: curl https://mise.run | sh
+
+    - name: Install Starship
+      shell: curl -sS https://starship.rs/install.sh | sh
