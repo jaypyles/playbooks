@@ -1,43 +1,61 @@
 ---
 - name: Install Packages
-  hosts: vm
+  hosts: wubby
   become: yes
 
   tasks:
-    # - name: Update Package Cache
-    #   apt:
-    #     update_cache: yes
-    #
-    # - name: Install Req. Packages with APT
-    #   apt:
-    #     name:
-    #       - fish
-    #       - bat
-    #       - firefox
-    #       - docker
-    #       - docker-compose
-    #       - grim
-    #       - htop
-    #       - jq
-    #       - kitty
-    #       - racket
-    #       - ripgrep
-    #     state: present
-    #
-    # - name: Install Req. Packages with SNAP
-    #   community.general.snap:
-    #     name:
-    #       - discord
-    #       - ipython
-    #       - obsidian
-    #       - spotify
-    #       - mise
-    #       - nvim
-    #       - telegram-desktop
-    #     classic: yes
+    - name: Update Package Cache
+      apt:
+        update_cache: yes
 
-    # - name: Install Mise
-    #   shell: curl https://mise.run | sh
+    - name: Install Req. Packages with APT
+      apt:
+        name:
+          - fish
+          - bat
+          - firefox
+          - docker
+          - docker-compose
+          - grim
+          - htop
+          - jq
+          - rsync
+          - kitty
+          - racket
+          - ripgrep
+          - exa
+        state: present
+
+    - name: Install Req. Packages with SNAP
+      community.general.snap:
+        name:
+          - discord
+          - obsidian
+          - spotify
+          - nvim
+          - telegram-desktop
+          - jump
+        classic: yes
+
+    - name: Install Mise
+      shell: curl https://mise.run | sh
 
     - name: Install Starship
-      shell: curl -sS https://starship.rs/install.sh | sh
+      shell: curl -sS https://starship.rs/install.sh | sh -s -- -y
+
+    - name: Install Doppler CLI
+      shell: sudo apt-get update && sudo apt-get install -y apt-transport-https ca-certificates curl gnupg && curl -sLf --retry 3 --tlsv1.2 --proto "=https" 'https://packages.doppler.com/public/cli/gpg.DE2A7741A397C129.key' | sudo gpg --dearmor -o /usr/share/keyrings/doppler-archive-keyring.gpg && echo "deb [signed-by=/usr/share/keyrings/doppler-archive-keyring.gpg] https://packages.doppler.com/public/cli/deb/debian any-version main" | sudo tee /etc/apt/sources.list.d/doppler-cli.list && sudo apt-get update && sudo apt-get install doppler
+
+    - name: Change Shell
+      ansible.builtin.command: usermod --shell /usr/bin/fish {{ ansible_user }}
+      become: yes
+
+    - name: Clone Dotfiles
+      git:
+        repo: https://github.com/jaypyles/.dotfiles.git
+        dest: ~/.dotfiles
+      become: no
+
+    - name: Copy Config
+      shell: rsync -a ~/.dotfiles/.config/ ~/.config/
+      become: no
