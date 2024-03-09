@@ -1,0 +1,100 @@
+---
+- name: Configure System for Arch Linux
+  hosts: archlinux
+  become: no
+
+  tasks:
+    - name: Update Package Cache
+      pacman:
+        update_cache: yes
+      become: yes
+
+    - name: Install Git
+      pacman:
+        name: git
+        state: present
+      become: yes
+
+    - name: Install Base Devel
+      shell: pacman -Sy --noconfirm --needed base-devel
+      become: yes
+
+    - name: Install OpenSSL
+      shell: pacman -Sy --noconfirm openssl
+      become: yes
+
+    - name: Clone yay
+      git:
+        repo: https://aur.archlinux.org/yay-bin.git
+        dest: "/home/{{ansible_user}}/yay"
+        update: true
+
+    - name: Build and install yay
+      command:
+        chdir: "/home/{{ansible_user}}/yay"
+        cmd: "makepkg -sfi --noconfirm"
+        creates: /usr/bin/yay
+
+    - name: Install Required Packages with Pacman
+      pacman:
+        name:
+          - python-pexpect
+          - fish
+          - bat
+          - firefox
+          - docker
+          - docker-compose
+          - grim
+          - htop
+          - jq
+          - rsync
+          - kitty
+          - racket
+          - ripgrep
+          - exa
+        state: present
+      become: yes
+
+    - name: Install packages using yay
+      kewlfft.aur.aur:
+        name:
+          - discord
+          - obsidian
+          - spotify
+          - neovim-nightly-bin
+          - telegram-desktop
+          - doppler-cli-bin
+        state: present
+        use: yay
+
+    - name: Install Jump with Snap
+      shell: |
+        git clone https://aur.archlinux.org/snapd.git &&
+        cd snapd &&
+        makepkg -si --noconfirm &&
+        sudo systemctl enable --now snapd.socket &&
+        sudo ln -s /var/lib/snapd/snap /snap
+
+    - name: Jump
+      shell: sudo snap install jump --classic
+
+    - name: Install Mise
+      shell: curl https://mise.run | sh
+      become: no
+
+    - name: Install Starship
+      shell: sudo curl -sS https://starship.rs/install.sh | sudo sh -s -- -y
+
+    - name: Change Shell
+      ansible.builtin.command: usermod --shell /usr/bin/fish {{ ansible_user }}
+      become: yes
+
+    - name: Clone Dotfiles
+      git:
+        repo: https://github.com/jaypyles/.dotfiles.git
+        dest: ~/.dotfiles
+      become: no
+
+    - name: Copy Config
+      shell: rsync -a ~/.dotfiles/.config/ ~/.config/
+      become: no

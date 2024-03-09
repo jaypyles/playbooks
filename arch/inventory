@@ -1,0 +1,2 @@
+[archlinux]
+172.27.0.1:2222 ansible_port=2222
