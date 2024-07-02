@@ -4,6 +4,10 @@
   become: yes
 
   tasks:
+    # - name: Move nosnap
+    # shell: mv /etc/apt/preferences.d/nosnap.pref /home/{{ ansible_user }}/Documents/nosnap.backup
+    # become: yes
+
     - name: Update Package Cache
       apt:
         update_cache: yes
@@ -24,6 +28,7 @@
           - racket
           - ripgrep
           - exa
+          - snapd
           - nodejs
         state: present
 

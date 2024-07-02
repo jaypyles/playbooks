@@ -4,6 +4,37 @@
   become: yes
 
   tasks:
+    - name: Update APT package index
+      apt:
+        update_cache: yes
+
+    - name: Install required packages
+      apt:
+        name:
+          - ca-certificates
+          - curl
+        state: present
+
+    - name: Create directory for Docker's GPG key
+      file:
+        path: /etc/apt/keyrings
+        state: directory
+        mode: "0755"
+
+    - name: Download Docker's GPG key
+      get_url:
+        url: https://download.docker.com/linux/ubuntu/gpg
+        dest: /etc/apt/keyrings/docker.asc
+
+    - name: Ensure Docker's GPG key has the correct permissions
+      file:
+        path: /etc/apt/keyrings/docker.asc
+        mode: "0644"
+
+    - name: Add Docker repository to APT sources
+      shell: |
+        echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.asc] https://download.docker.com/linux/ubuntu $(. /etc/os-release && echo $VERSION_CODENAME) stable" | tee /etc/apt/sources.list.d/docker.list
+
     - name: Update Package Cache
       apt:
         update_cache: yes
@@ -11,11 +42,15 @@
     - name: Install Req. Packages with APT
       apt:
         name:
+          - build-essential
           - fish
           - bat
           - firefox
-          - docker
-          - docker-compose
+          - docker-ce
+          - docker-ce-cli
+          - containerd.io
+          - docker-buildx-plugin
+          - docker-compose-plugin
           - grim
           - htop
           - jq
@@ -23,7 +58,7 @@
           - kitty
           - racket
           - ripgrep
-          - exa
+          - eza
           - nodejs
         state: present
 
